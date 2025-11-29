@@ -8,6 +8,7 @@
 * **1.3 Versão do documento e histórico de revisão:**
 *  - v1.0 (Criação inicial do rascunho).
    - v1.0.1 (Especificações técnicas do projeto)
+   - v1.0.2 (Modelo conceitual e hipóteses; Variáveis, fatores, tratamentos e objetos de estudo; Desenho experimental) - Atual
 * **1.4 Datas:** 21/11/2025
 * **1.5 Autores:** Alfredo Luis Vieira - Graduando em Engenharia de Software
 * **1.6 Responsável principal:** Alfredo Luis Vieira.
@@ -133,3 +134,118 @@
 * Custo de nuvem projetado exceder o orçamento nas primeiras horas.
 * Taxa de erro superior a 10% já na carga mínima (indica erro de configuração ou implementação, não de performance).
 * Bloqueio permanente do IP da ferramenta de teste pela plataforma alvo.
+
+## 7. Modelo conceitual e hipóteses
+
+### 7.1 Modelo conceitual do experimento
+O modelo baseia-se na premissa da **"Taxa de Abstração"**: plataformas Low-Code operam sobre camadas adicionais de software (interpretadores de modelos visuais, *runtimes* proprietários ou frameworks genéricos pesados) que introduzem *overhead* computacional. Em contraste, o High-Code (Node.js) opera com código mais próximo da linguagem de máquina e otimizado para o *runtime* V8, com menos intermediários.
+
+**Esquema de Influência Teórica:**
+1.  **Entrada:** Requisição HTTP.
+2.  **Fluxo High-Code:** Entrada $\rightarrow$ [Runtime Otimizado] $\rightarrow$ Lógica Específica $\rightarrow$ Saída.
+3.  **Fluxo Low-Code:** Entrada $\rightarrow$ [Motor de Interpretação Genérico] $\rightarrow$ [Tradução de Modelo Visual] $\rightarrow$ Lógica $\rightarrow$ Saída.
+4.  **Resultado Esperado:** A camada extra do Low-Code consome mais ciclos de CPU e Memória por requisição, resultando em latência maior e saturação mais rápida (menor *throughput*) conforme a concorrência aumenta.
+
+### 7.2 Hipóteses formais ($H_0$, $H_1$)
+As hipóteses comparam a média ($\mu$) das métricas entre o grupo Low-Code ($LC$) e o grupo High-Code ($HC$).
+
+**Para Latência (O1):**
+* **$H_{0_L}$ (Nula):** Não há diferença estatisticamente significativa na latência média entre as soluções. ($\mu_{LC\_lat} = \mu_{HC\_lat}$)
+* **$H_{1_L}$ (Alternativa):** A latência média da solução Low-Code é superior à do High-Code. ($\mu_{LC\_lat} > \mu_{HC\_lat}$)
+
+**Para Vazão/Throughput (O2):**
+* **$H_{0_T}$ (Nula):** Não há diferença significativa no throughput máximo (RPS) suportado. ($\mu_{LC\_rps} = \mu_{HC\_rps}$)
+* **$H_{1_T}$ (Alternativa):** O throughput máximo da solução Low-Code é inferior ao do High-Code. ($\mu_{LC\_rps} < \mu_{HC\_rps}$)
+
+**Para Eficiência de CPU (O3):**
+* **$H_{0_E}$ (Nula):** O consumo de CPU é equivalente para processar a mesma carga de trabalho. ($\mu_{LC\_cpu} = \mu_{HC\_cpu}$)
+* **$H_{1_E}$ (Alternativa):** A solução Low-Code consome significativamente mais CPU para processar a mesma carga. ($\mu_{LC\_cpu} > \mu_{HC\_cpu}$)
+
+### 7.3 Nível de significância e considerações de poder
+* **Nível de Significância ($\alpha$):** 0,05 (5%). Aceitamos um risco de 5% de rejeitar a hipótese nula incorretamente (Erro Tipo I).
+* **Poder Estatístico ($1 - \beta$):** Espera-se um poder alto (**> 0,90**).
+    * *Justificativa:* Diferente de experimentos com humanos, benchmarks de software automatizados permitem coletar milhares de amostras (requisições) com baixo custo e alta precisão. O tamanho da amostra planejado garante que mesmo pequenas diferenças de performance (efeitos pequenos) serão detectadas como estatisticamente significativas.
+
+---
+
+## 8. Variáveis, fatores, tratamentos e objetos de estudo
+
+### 8.1 Objetos de estudo
+Os objetos manipulados são os **Artefatos de Software** (as APIs) construídos para o experimento:
+1.  **Artefato A (Low-Code):** API REST construída na Plataforma "X" (versão Enterprise compilada/publicada).
+2.  **Artefato B (High-Code):** API REST construída em Node.js com framework Fastify (código fonte otimizado).
+*Nota: Ambos implementam estritamente a mesma regra de negócio: Consulta de Clientes com filtro por "Status" e paginação.*
+
+### 8.2 Sujeitos / participantes (visão geral)
+Neste contexto de experimento *in silico* (computacional), não há participantes humanos executando tarefas manuais.
+* **Sujeitos:** São as **instâncias de servidor** (Containers/Pods) rodando os artefatos de software sob teste (SUT - *System Under Test*).
+* **Agentes:** O papel do "usuário" é desempenhado por Usuários Virtuais (VUs) gerados pela ferramenta k6, que atuam como agentes estocásticos enviando requisições.
+
+### 8.3 Variáveis independentes (fatores) e seus níveis
+Este é um experimento fatorial com dois fatores principais controlados:
+* **Fator A: Tecnologia (Variável Qualitativa Nominal)**
+    * Nível 1: Plataforma Low-Code.
+    * Nível 2: High-Code (Node.js).
+* **Fator B: Carga de Concorrência (Variável Quantitativa Ordinal)**
+    * Nível 1: Carga Baixa (10 VUs).
+    * Nível 2: Carga Média (100 VUs).
+    * Nível 3: Carga Alta (500 VUs).
+    * Nível 4: Estresse (1.000 VUs).
+
+### 8.4 Tratamentos (condições experimentais)
+Os tratamentos são as combinações dos níveis dos fatores (Desenho $2 \times 4 = 8$ tratamentos únicos):
+* **T1:** Low-Code sob 10 VUs.
+* **T2:** Low-Code sob 100 VUs.
+* **...**
+* **T5:** Node.js sob 10 VUs.
+* **T6:** Node.js sob 100 VUs.
+* *Distinção:* O que distingue T1 de T5 é puramente a stack tecnológica, mantendo hardware, rede e carga idênticos.
+
+### 8.5 Variáveis dependentes (respostas)
+As medidas de resultado observadas diretamente dos instrumentos:
+1.  **Latência (Response Time):** Tempo total de resposta em milissegundos (ms).
+2.  **Vazão (Throughput):** Taxa de Requisições por Segundo (RPS).
+3.  **Taxa de Erro:** Porcentagem de códigos de status HTTP não-200 (5xx, 4xx).
+4.  **Consumo de Recursos:** Porcentagem de uso de vCPU e Megabytes de Memória RAM (coletados via agente de monitoramento no servidor).
+
+### 8.6 Variáveis de controle / bloqueio
+Fatores mantidos constantes para evitar ruído nos dados e garantir comparabilidade:
+* **Hardware do Servidor:** Mesma família de instância (ex: AWS t3.medium) e limites de container (CPU/RAM) para ambos.
+* **Banco de Dados:** Mesma instância RDS PostgreSQL, mesmos índices, mesma massa de dados (100k registros).
+* **Localização de Rede:** Ambos os testes rodam na mesma região (ex: us-east-1) e mesma VPC.
+* **Tamanho do Payload:** O JSON de resposta terá estrutura e tamanho idênticos (~2KB) em ambas as soluções.
+
+### 8.7 Possíveis variáveis de confusão conhecidas
+* **"Noisy Neighbors" (Vizinhos Barulhentos):** Em nuvem pública, outra VM no mesmo hardware físico pode roubar ciclos de CPU.
+    * *Mitigação:* Executar testes em horários de baixo tráfego e realizar múltiplas rodadas.
+* **Cold Start (Partida a Frio):** A primeira execução de código interpretado ou serverless tende a ser lenta.
+    * *Mitigação:* Aplicar fase de "Warm-up" (aquecimento) de 1 minuto antes de começar a coleta de dados.
+* **Latência de Rede Externa:** Flutuações na internet pública.
+    * *Mitigação:* O gerador de carga (k6) estará na mesma rede interna (VPC) dos servidores de aplicação.
+
+---
+
+## 9. Desenho experimental
+
+### 9.1 Tipo de desenho
+Será utilizado um **Desenho Fatorial Completo $2 \times 4$** (Two-Factor Full Factorial Design).
+* **Justificativa:** Este desenho é o mais adequado pois não queremos apenas saber "qual tecnologia é mais rápida em média", mas sim **como a tecnologia interage com a carga**. Queremos observar se a curva de degradação do Low-Code é linear ou exponencial conforme a carga aumenta (interação entre Fator A e Fator B).
+
+### 9.2 Randomização e alocação
+* **O que será randomizado:** A **ordem de execução** dos blocos de teste.
+* **Procedimento:** Não executaremos "Todos os cenários Low-Code" seguidos de "Todos os cenários High-Code". A ordem dos 8 tratamentos será sorteada via script (ex: T5, T2, T8, T1...).
+    * *Objetivo:* Isso evita que flutuações temporais na infraestrutura da nuvem (ex: uma lentidão momentânea da rede AWS às 14h) prejudiquem sistematicamente apenas uma das tecnologias.
+
+### 9.3 Balanceamento e contrabalanço
+* **Balanceamento:** Cada tratamento terá exatamente o mesmo número de repetições (3 rodadas de 5 minutos cada).
+* **Contrabalanço (Reset):** Para evitar efeitos de aprendizagem ou acumulação (ex: cache de banco de dados aquecido beneficiando injustamente o segundo teste da fila):
+    1.  O Banco de Dados será reiniciado (ou o cache *flusheado*) entre cada troca de tecnologia.
+    2.  Haverá um intervalo de **"Cool-down"** (resfriamento) de 5 minutos entre testes para garantir que filas de processos, conexões TCP e sockets sejam liberados pelo sistema operacional.
+
+### 9.4 Número de grupos e sessões
+* **Grupos:** 2 Grupos Experimentais (Baseados nas Tecnologias: Low-Code e High-Code).
+* **Sessões/Rodadas:**
+    * Total de Tratamentos Únicos: 8.
+    * Repetições por Tratamento: 3 (para garantir consistência e eliminar outliers).
+    * **Total de Sessões de Execução:** $8 \times 3 = 24$ sessões de teste de carga completas.
+* **Justificativa:** 3 repetições são consideradas o mínimo aceitável em engenharia de desempenho para descartar anomalias momentâneas da rede. A média aritmética das 3 rodadas será o valor final usado na análise estatística.
