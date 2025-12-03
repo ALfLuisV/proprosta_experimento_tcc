@@ -8,7 +8,8 @@
 * **1.3 Versão do documento e histórico de revisão:**
 *  - v1.0 (Criação inicial do rascunho).
    - v1.0.1 (Especificações técnicas do projeto)
-   - v1.0.2 (Modelo conceitual e hipóteses; Variáveis, fatores, tratamentos e objetos de estudo; Desenho experimental) - Atual
+   - v1.0.2 (Modelo conceitual e hipóteses; Variáveis, fatores, tratamentos e objetos de estudo; Desenho experimental)
+   - v1.0.3 (População, sujeitos e amostragem; Instrumentação e protocolo operacional; Plano de análise de dados (pré-execução)) - Atual
 * **1.4 Datas:** 21/11/2025
 * **1.5 Autores:** Alfredo Luis Vieira - Graduando em Engenharia de Software
 * **1.6 Responsável principal:** Alfredo Luis Vieira.
@@ -249,3 +250,69 @@ Será utilizado um **Desenho Fatorial Completo $2 \times 4$** (Two-Factor Full F
     * Repetições por Tratamento: 3 (para garantir consistência e eliminar outliers).
     * **Total de Sessões de Execução:** $8 \times 3 = 24$ sessões de teste de carga completas.
 * **Justificativa:** 3 repetições são consideradas o mínimo aceitável em engenharia de desempenho para descartar anomalias momentâneas da rede. A média aritmética das 3 rodadas será o valor final usado na análise estatística.
+## 10. População, sujeitos e amostragem
+
+### 10.1 População-alvo
+Neste experimento *in silico* (computacional), a "população" refere-se ao universo de **transações de leitura (CRUD Read Operations)** típicas de sistemas corporativos da empresa. Especificamente, buscamos representar requisições HTTP síncronas que envolvem processamento de regras de negócio leves e consulta a banco de dados relacional.
+
+### 10.2 Critérios de inclusão de sujeitos (Sistemas e Requisições)
+* **Sistemas (SUT):** Devem ser microsserviços capazes de expor endpoints REST, retornar JSON padronizado.
+* **Requisições (Amostra):** Serão consideradas válidas apenas as requisições que completarem o ciclo de ida e volta, retornando qualquer código de status HTTP válido (200-599).
+
+### 10.3 Critérios de exclusão de sujeitos
+* Requisições que falharem devido a problemas na ferramenta de teste, e não no servidor alvo.
+* Transações que envolvam chamadas externas (APIs de terceiros), para evitar contaminação da latência por fatores terceiros.
+
+### 10.4 Tamanho da amostra planejado (Sample Size)
+O tamanho da amostra aqui refere-se ao **número de requisições disparadas (N)**.
+* **Planejamento:** Serão coletados no mínimo **1.000 data points (requisições)** por cenário de teste.
+* **Justificativa:** Com N > 1.000, o Teorema Central do Limite aplica-se robustamente, permitindo alta confiança nas médias de latência e detecção de micro-variações no comportamento da CPU.
+
+### 10.5 Método de seleção / geração
+* **Amostragem Sintética Aleatória:** Utilizaremos um gerador de carga (k6) configurado com uma *seed* (semente) fixa. O script escolherá aleatoriamente IDs de clientes entre 1 e 10.000 para consultar no banco de dados, garantindo que o teste não fique viciado apenas em dados cacheados na memória RAM.
+
+### 10.6 Treinamento e preparação (Warm-up)
+Como os "sujeitos" são softwares:
+* **Warm-up do Runtime:** Antes da coleta oficial de dados, haverá uma fase de "aquecimento" de 60 segundos com carga leve (5 VUs).
+* **Objetivo:** Permitir que o JIT (Just-in-Time Compiler) do Node.js otimize o código quente, eliminando a latência artificial da "partida a frio".
+
+---
+
+## 11. Instrumentação e protocolo operacional
+
+### 11.1 Instrumentos de coleta
+1.  **k6 (Load Generator):** Ferramenta open-source em Go/JS. Responsável por simular os usuários, disparar requisições e coletar métricas de Latência (M01, M03) e Vazão (M06).
+3.  **Postman (Validação Funcional):** Usado apenas na fase de preparação para garantir que o JSON retornado pelo Low-Code é estruturalmente idêntico ao do High-Code.
+
+### 11.2 Materiais de suporte
+* **Script de Teste (load_test.js):** Arquivo de configuração do k6 contendo os cenários (Ramp-up, Plateau, Ramp-down).
+* **Dataset de Seed:** Arquivo SQL (`dump.sql`) com 10.000 de registros anonimizados para popular o banco.
+
+### 11.3 Procedimento experimental (Fluxograma e Passo a Passo)
+
+Abaixo apresenta-se o fluxo operacional detalhado, integrando os *stakeholders*, *instrumentos* e *variáveis* em cada etapa.
+
+![Fluxograma do Experimento](assets/diagram.png)
+
+## 12. Plano de análise de dados (pré-execução)
+
+### 12.1 Estratégia geral de análise (como responderá às questões)
+A análise será baseada em **Inferência Comparativa Quantitativa**, cruzando os dados de desempenho (Latência/Vazão) com os dados de consumo de recursos (CPU/Memória) para determinar a eficiência de cada plataforma.
+* **Para responder à Q1 (Latência):** Compararemos as médias e os percentis de cauda (p95, p99) de cada grupo experimental. O foco não é apenas a média, mas a estabilidade da resposta (Desvio Padrão).
+* **Para responder à Q2 (Overhead):** Calcularemos o *delta* percentual de performance usando a fórmula: $\frac{(\mu_{LowCode} - \mu_{HighCode})}{\mu_{HighCode}} \times 100$.
+* **Para responder à Q3 (Eficiência):** Será criada uma métrica derivada de "Custo por Transação" (ex: %CPU / RPS) para normalizar a comparação.
+
+### 12.2 Métodos estatísticos planejados
+1.  **Teste de Normalidade:** Aplicado preliminarmente para verificar se a distribuição das latências segue uma curva normal. (A expectativa é que não siga, pois latência de rede geralmente possui distribuição de cauda longa).
+2.  **Teste de Hipótese:** Caso os dados não sejam normais, utilizaremos este teste não-paramétrico para comparar as medianas de latência entre os grupos Low-Code e High-Code com significância estatística ($\alpha = 0.05$).
+3.  **Análise Visual:**
+    * **Boxplots:** Para visualizar a dispersão, simetria e identificar *outliers* de latência em cada nível de carga.
+    * **Gráficos de Série Temporal (Time-series):** Plotagem de Latência x Tempo e Throughput x Tempo para identificar degradação progressiva ou "memory leaks" durante o teste.
+
+### 12.3 Tratamento de dados faltantes e outliers
+* **Timeouts:** Requisições que excederem o limite de tempo (ex: 30s) **não** serão removidas como *outliers*. Elas serão reclassificadas como **Erros Funcionais** (Falha). Isso é crucial para penalizar a ferramenta corretamente, pois um timeout é a pior experiência possível para o usuário.
+
+### 12.4 Plano de análise para dados qualitativos (se houver)
+* **Análise de Logs de Erro:** Caso ocorram falhas (HTTP 500), será realizada uma **Análise de Conteúdo** nos *Stack Traces* gerados.
+    * *Categorização:* Os erros serão classificados em categorias como "Falha de Conexão com Banco", "Estouro de Memória (OOM)", "Timeout Interno" ou "Erro de Lógica".
+    * *Objetivo:* Explicar qualitativamente *o motivo* do colapso de uma plataforma antes da outra (ex: o Low-Code falhou por má gestão de pool de conexões, enquanto o Node.js falhou por CPU).
