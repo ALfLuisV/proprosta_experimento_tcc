@@ -9,7 +9,8 @@
 *  - v1.0 (Criação inicial do rascunho).
    - v1.0.1 (Especificações técnicas do projeto)
    - v1.0.2 (Modelo conceitual e hipóteses; Variáveis, fatores, tratamentos e objetos de estudo; Desenho experimental)
-   - v1.0.3 (População, sujeitos e amostragem; Instrumentação e protocolo operacional; Plano de análise de dados (pré-execução)) - Atual
+   - v1.0.3 (População, sujeitos e amostragem; Instrumentação e protocolo operacional; Plano de análise de dados (pré-execução))
+   - v1.0.4 (Avaliação de validade (ameaças e mitigação)) - Atual
 * **1.4 Datas:** 21/11/2025
 * **1.5 Autores:** Alfredo Luis Vieira - Graduando em Engenharia de Software
 * **1.6 Responsável principal:** Alfredo Luis Vieira.
@@ -315,4 +316,56 @@ A análise será baseada em **Inferência Comparativa Quantitativa**, cruzando o
 ### 12.4 Plano de análise para dados qualitativos (se houver)
 * **Análise de Logs de Erro:** Caso ocorram falhas (HTTP 500), será realizada uma **Análise de Conteúdo** nos *Stack Traces* gerados.
     * *Categorização:* Os erros serão classificados em categorias como "Falha de Conexão com Banco", "Estouro de Memória (OOM)", "Timeout Interno" ou "Erro de Lógica".
-    * *Objetivo:* Explicar qualitativamente *o motivo* do colapso de uma plataforma antes da outra (ex: o Low-Code falhou por má gestão de pool de conexões, enquanto o Node.js falhou por CPU).
+    * *Objetivo:* Explicar qualitativamente *o motivo* do colapso de uma plataforma antes da outra (ex: o Low-Code falhou por má gestão de pool de conexões, enquanto o Node.js falhou por CPU).# 13. Avaliação de validade (ameaças e mitigação)
+
+## 13. Avaliação de validade (ameaças e mitigação)
+
+### 13.1 Validade de conclusão
+Esta validade diz respeito à relação estatística entre o tratamento e o resultado. As principais ameaças à capacidade de tirar conclusões estatísticas corretas são:
+
+* **Baixo Poder Estatístico:** O risco de não detectar uma diferença de performance real porque a amostra é pequena.
+    * *Mitigação:* Definimos um tamanho de amostra massivo (> 10.000 requisições por cenário), o que garante um poder estatístico muito alto para detectar até mesmo micro-variações de latência.
+* **Violação de Suposições Estatísticas:** Assumir que a latência segue uma Distribuição Normal (Curva de Gauss) para usar testes paramétricos (Teste T), quando na realidade dados de rede costumam ter cauda longa (*long-tailed*).
+    * *Mitigação:* Planejamos usar testes não-paramétricos (**Mann-Whitney U**) que não exigem normalidade, além de analisar visualmente via Boxplots.
+* **Confiabilidade das Medidas:** Variações causadas pela ferramenta de medição e não pelo sistema.
+    * *Mitigação:* O gerador de carga (k6) rodará em uma máquina dedicada com recursos sobressalentes para garantir que o "gargalo" nunca seja a ferramenta de teste (Coordinated Omission).
+
+### 13.2 Validade interna
+Refere-se à certeza de que foi o tratamento (Low-Code vs. High-Code) que causou o resultado, e não um fator externo desconhecido.
+
+* **História / Maturação (Efeitos Temporais):** O desempenho do servidor pode degradar ao longo do tempo (ex: *Memory Leak* ou aquecimento de cache) independentemente da tecnologia.
+    * *Mitigação:* Utilização de fases estritas de *Warm-up* (para eliminar a partida a frio) e reinicialização dos serviços/banco de dados entre cada rodada.
+* **Instrumentação ("Noisy Neighbors"):** Em ambiente de nuvem compartilhada, outra máquina virtual vizinha pode roubar CPU momentaneamente, distorcendo o teste de uma das tecnologias.
+    * *Mitigação:* Execução de múltiplas rodadas (3x) em horários distintos e randomização da ordem de execução (ex: não rodar todos os testes Low-Code na segunda-feira de manhã e os Node.js à noite).
+* **Seleção (Comparabilidade):** O código High-Code ser super-otimizado por um especialista, enquanto o Low-Code é feito de forma padrão, gerando uma comparação injusta.
+    * *Mitigação:* A implementação em Node.js seguirá padrões sem otimizações extremas de Kernel ou Assembly, simulando o código médio de mercado, para manter a paridade com a natureza "padrão" do Low-Code.
+
+### 13.3 Validade de constructo
+Refere-se à adequação das métricas escolhidas para representar a realidade teórica (Performance e Eficiência).
+
+* **Viés de Mono-operação:** O experimento usa apenas um tipo de consulta (Leitura Simples) para definir a "performance da plataforma".
+    * *Mitigação:* Deixaremos explícito nas conclusões que os resultados se aplicam a cenários *Read-Heavy* de complexidade baixa, evitando generalizar para processamentos matemáticos pesados.
+* **Definição de "Latência":** A métrica de tempo de resposta pode incluir o tempo de rede (Network RTT), que não é culpa da plataforma de software.
+    * *Mitigação:* O gerador de carga estará na mesma VPC (rede interna) dos servidores para minimizar a latência de rede. Analisaremos também o "Time to First Byte" (TTFB) para isolar o processamento do servidor.
+* **Interação Teste x Tratamento:** O fato de estar sendo monitorado (agentes de log verbose) pode deixar o Low-Code mais lento do que ele seria em produção.
+    * *Mitigação:* Desativaremos logs de *debug* em ambas as plataformas, configurando-as para modo "Produção/Release".
+
+### 13.4 Validade externa
+Refere-se à capacidade de generalizar os resultados para fora deste experimento específico.
+
+* **Representatividade do Ambiente:** O ambiente de *Staging* pode não ter os mesmos balanceadores de carga e firewalls do ambiente de Produção real.
+    * *Limitação:* Aceitamos esta ameaça devido a custos. Os resultados servirão como indicativo relativo (A é melhor que B), não como valor absoluto de produção.
+* **Especificidade da Plataforma:** Os resultados obtidos com a "Plataforma Low-Code X" não podem ser generalizados para "Todas as ferramentas Low-Code" (como OutSystems, Mendix, PowerApps, etc.).
+    * *Mitigação:* O relatório final deixará claro que o *benchmark* é vinculado à versão e fornecedor específicos testados.
+* **Natureza da Carga Sintética:** Usuários reais não se comportam como robôs (k6) que enviam requisições em intervalos matematicamente precisos.
+    * *Limitação:* O teste foca em *Capacidade de Servidor* (Stress Test), não em *Simulação de Comportamento de Usuário* (Real User Monitoring).
+
+### 13.5 Resumo das principais ameaças e estratégias de mitigação
+
+| Tipo de Validade | Ameaça Principal | Estratégia de Mitigação Planejada |
+| :--- | :--- | :--- |
+| **Interna** | "Noisy Neighbors" (Variação de performance da Cloud) | Executar 3 repetições por cenário; Randomizar a ordem de execução; Usar instâncias de tamanho fixo. |
+| **Interna** | Cold Start / Caching | Fase de *Warm-up* de 60s antes da coleta; Reset do Banco de Dados entre rodadas. |
+| **Constructo** | Latência de Rede mascarando o processamento | Rodar testes dentro da mesma VPC (Rede Interna); Monitorar métricas de CPU/RAM (Internas) além da latência. |
+| **Conclusão** | Violação de suposição de Normalidade dos dados | Utilizar testes estatísticos não-paramétricos (Mann-Whitney) e focar em percentis (p95/p99) em vez de apenas média. |
+| **Externa** | Generalização indevida para qualquer Low-Code | Delimitar explicitamente no relatório que os dados valem apenas para a ferramenta "X" na versão testada. |
