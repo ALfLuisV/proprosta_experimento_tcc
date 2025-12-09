@@ -1,7 +1,7 @@
 # Apresentação do Experimento: Low-Code vs. High-Code
 
 ## 1. Contexto e Problema
-A organização enfrenta um dilema estratégico: a necessidade de acelerar o desenvolvimento utilizando plataformas **Low-Code** versus a incerteza técnica sobre a capacidade dessas ferramentas suportarem alta demanda. Embora o Low-Code prometa agilidade, existe o risco do custo de performance ("taxa de abstração") inviabilizar sua aplicação em sistemas críticos de acesso em massa. O experimento surge para substituir suposições por dados técnicos concretos sobre desempenho e escalabilidade.
+Quando falamos sobre solução de problemas a partir de sistemas, as organizações enfrentam atualmente um dilema estratégico: a necessidade de acelerar o desenvolvimento utilizando plataformas **Low-Code** versus a incerteza técnica sobre a capacidade dessas ferramentas suportarem alta demanda. Embora o Low-Code prometa agilidade, existe o risco do custo de performance ("taxa de abstração") inviabilizar sua aplicação em sistemas críticos de acesso em massa. O experimento surge para substituir suposições por dados técnicos concretos sobre desempenho e escalabilidade.
 
 ## 2. Objetivos e Métricas (GQM)
 O objetivo central é analisar comparativamente a degradação de performance entre uma solução Low-Code e uma solução tradicional em Node.js (High-Code). Abaixo, a matriz detalhada de Objetivos, Perguntas e Métricas definida para o estudo:
