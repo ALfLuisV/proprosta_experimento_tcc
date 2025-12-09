@@ -24,12 +24,19 @@ O objetivo central é analisar comparativamente a degradação de performance en
 ### 3.2 Hipóteses Formais de Teste ($H_1$ - Alternativas)
 As hipóteses buscam confirmar a direção da diferença de desempenho entre Low-Code (LC) e High-Code (HC):
 
-* **Latência ($O1$):** A latência média da solução Low-Code será **superior** à do High-Code.
-    * *Fórmula:* $\mu_{LC\_lat} > \mu_{HC\_lat}$
-* **Vazão/Throughput ($O2$):** A capacidade máxima de requisições por segundo do Low-Code será **inferior** à do High-Code.
-    * *Fórmula:* $\mu_{LC\_rps} < \mu_{HC\_rps}$
-* **Eficiência de CPU ($O3$):** O consumo de processamento do Low-Code será **superior** ao do High-Code para realizar a mesma tarefa.
-    * *Fórmula:* $\mu_{LC\_cpu} > \mu_{HC\_cpu}$
+**Para Latência (O1):**
+* **$H_{0_L}$ (Nula):** Não há diferença estatisticamente significativa na latência média entre as soluções. ($\mu_{LC\_lat} = \mu_{HC\_lat}$)
+* **$H_{1_L}$ (Alternativa):** A latência média da solução Low-Code é superior à do High-Code. ($\mu_{LC\_lat} > \mu_{HC\_lat}$)
+
+**Para Vazão/Throughput (O2):**
+* **$H_{0_T}$ (Nula):** Não há diferença significativa no throughput máximo (RPS) suportado. ($\mu_{LC\_rps} = \mu_{HC\_rps}$)
+* **$H_{1_T}$ (Alternativa):** O throughput máximo da solução Low-Code é inferior ao do High-Code. ($\mu_{LC\_rps} < \mu_{HC\_rps}$)
+
+**Para Eficiência de CPU (O3):**
+* **$H_{0_E}$ (Nula):** O consumo de CPU é equivalente para processar a mesma carga de trabalho. ($\mu_{LC\_cpu} = \mu_{HC\_cpu}$)
+* **$H_{1_E}$ (Alternativa):** A solução Low-Code consome significativamente mais CPU para processar a mesma carga. ($\mu_{LC\_cpu} > \mu_{HC\_cpu}$)
+
+ 
 ## 4. Objetos de Estudo e Variáveis Controladas
 O experimento comparará dois artefatos de software distintos que implementam **exatamente a mesma regra de negócio**: uma API de consulta de clientes com filtros e paginação. As variáveis independentes manipuladas serão a **Tecnologia** (Low-Code vs. High-Code) e a **Carga de Concorrência**, submetendo ambas as soluções a cenários escalonados de 10, 100, 500 e 1.000 usuários simultâneos para observar a curva de degradação.
 
