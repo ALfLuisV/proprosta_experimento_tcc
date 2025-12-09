@@ -14,8 +14,22 @@ O objetivo central é analisar comparativamente a degradação de performance en
 | **(O4) Confiabilidade**<br>Verificar estabilidade sob estresse. | **Q1:** Qual a taxa de falhas sob carga máxima?<br>**Q2:** Ocorrem timeouts de conexão? | **M14:** Taxa de Erro (%)<br>**M16:** Contagem de Timeouts |
 
 ## 3. Modelo Conceitual e Hipóteses
-O modelo teórico baseia-se na premissa de que plataformas Low-Code operam sobre camadas adicionais de interpretação e frameworks genéricos, gerando um *overhead* computacional natural. As hipóteses principais testarão se, sob a mesma carga, a solução Low-Code apresenta latência média superior ($H_1$ Latência) e consome significativamente mais recursos de CPU ($H_1$ Eficiência) do que o código otimizado em Node.js.
+### 3.1 Modelo Conceitual (A Premissa da "Taxa de Abstração")
+* **Camadas Adicionais:** O modelo assume que plataformas Low-Code possuem um custo de performance inerente devido à existência de camadas extras de software (interpretadores de modelos visuais, *runtimes* proprietários e frameworks genéricos), gerando *overhead* computacional.
+* **Comparativo de Arquitetura:**
+    * **High-Code (Node.js):** Fluxo direto e otimizado (Entrada $\rightarrow$ Runtime V8 $\rightarrow$ Lógica $\rightarrow$ Saída).
+    * **Low-Code:** Fluxo com intermediários (Entrada $\rightarrow$ Motor de Interpretação $\rightarrow$ Tradução do Modelo Visual $\rightarrow$ Lógica $\rightarrow$ Saída).
+* **Resultado Esperado:** A arquitetura do Low-Code deve resultar em maior consumo de ciclos de CPU/Memória, levando a uma latência mais alta e saturação precoce (menor vazão) conforme a concorrência aumenta.
 
+### 3.2 Hipóteses Formais de Teste ($H_1$ - Alternativas)
+As hipóteses buscam confirmar a direção da diferença de desempenho entre Low-Code (LC) e High-Code (HC):
+
+* **Latência ($O1$):** A latência média da solução Low-Code será **superior** à do High-Code.
+    * *Fórmula:* $\mu_{LC\_lat} > \mu_{HC\_lat}$
+* **Vazão/Throughput ($O2$):** A capacidade máxima de requisições por segundo do Low-Code será **inferior** à do High-Code.
+    * *Fórmula:* $\mu_{LC\_rps} < \mu_{HC\_rps}$
+* **Eficiência de CPU ($O3$):** O consumo de processamento do Low-Code será **superior** ao do High-Code para realizar a mesma tarefa.
+    * *Fórmula:* $\mu_{LC\_cpu} > \mu_{HC\_cpu}$
 ## 4. Objetos de Estudo e Variáveis Controladas
 O experimento comparará dois artefatos de software distintos que implementam **exatamente a mesma regra de negócio**: uma API de consulta de clientes com filtros e paginação. As variáveis independentes manipuladas serão a **Tecnologia** (Low-Code vs. High-Code) e a **Carga de Concorrência**, submetendo ambas as soluções a cenários escalonados de 10, 100, 500 e 1.000 usuários simultâneos para observar a curva de degradação.
 
