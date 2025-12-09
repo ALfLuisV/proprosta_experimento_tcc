@@ -36,6 +36,10 @@ As hipóteses buscam confirmar a direção da diferença de desempenho entre Low
 * **$H_{0_E}$ (Nula):** O consumo de CPU é equivalente para processar a mesma carga de trabalho. ($\mu_{LC\_cpu} = \mu_{HC\_cpu}$)
 * **$H_{1_E}$ (Alternativa):** A solução Low-Code consome significativamente mais CPU para processar a mesma carga. ($\mu_{LC\_cpu} > \mu_{HC\_cpu}$)
 
+
+**Para Confiabilidade (O4):**
+* **$H_{0_E}$ (Nula):** Não existe uma diferença notavel em falhas entre as duas implementações 
+* **$H_{1_E}$ (Alternativa):** A solução Low-Code possui uma taxa maior de falhas do que a solução High-Code
  
 ## 4. Objetos de Estudo e Variáveis Controladas
 O experimento comparará dois artefatos de software distintos que implementam **exatamente a mesma regra de negócio**: uma API de consulta de clientes com filtros e paginação. 
