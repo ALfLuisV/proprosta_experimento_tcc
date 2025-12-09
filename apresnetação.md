@@ -38,7 +38,32 @@ As hipóteses buscam confirmar a direção da diferença de desempenho entre Low
 
  
 ## 4. Objetos de Estudo e Variáveis Controladas
-O experimento comparará dois artefatos de software distintos que implementam **exatamente a mesma regra de negócio**: uma API de consulta de clientes com filtros e paginação. As variáveis independentes manipuladas serão a **Tecnologia** (Low-Code vs. High-Code) e a **Carga de Concorrência**, submetendo ambas as soluções a cenários escalonados de 10, 100, 500 e 1.000 usuários simultâneos para observar a curva de degradação.
+O experimento comparará dois artefatos de software distintos que implementam **exatamente a mesma regra de negócio**: uma API de consulta de clientes com filtros e paginação. 
+
+### 4.1 Variáveis independentes (fatores) e seus níveis
+Este é um experimento fatorial com dois fatores principais controlados:
+* **Fator A: Tecnologia (Variável Qualitativa Nominal)**
+    * Nível 1: Plataforma Low-Code.
+    * Nível 2: High-Code (Node.js).
+* **Fator B: Carga de Concorrência (Variável Quantitativa Ordinal)**
+    * Nível 1: Carga Baixa (10 VUs).
+    * Nível 2: Carga Média (100 VUs).
+    * Nível 3: Carga Alta (500 VUs).
+    * Nível 4: Estresse (1.000 VUs).
+ 
+  ### 4.2 Variáveis dependentes (respostas)
+As medidas de resultado observadas diretamente dos instrumentos:
+1.  **Latência (Response Time):** Tempo total de resposta em milissegundos (ms).
+2.  **Vazão (Throughput):** Taxa de Requisições por Segundo (RPS).
+3.  **Taxa de Erro:** Porcentagem de códigos de status HTTP não-200 (5xx, 4xx).
+4.  **Consumo de Recursos:** Porcentagem de uso de vCPU e Megabytes de Memória RAM (coletados via agente de monitoramento no servidor).
+
+### 4.3 Variáveis de controle / bloqueio
+Fatores mantidos constantes para evitar ruído nos dados e garantir comparabilidade:
+* **Hardware do Servidor:** Mesma família de instância (ex: AWS t3.medium) e limites de container (CPU/RAM) para ambos.
+* **Banco de Dados:** Mesma instância RDS PostgreSQL, mesmos índices, mesma massa de dados (100k registros).
+* **Localização de Rede:** Ambos os testes rodam na mesma região (ex: us-east-1) e mesma VPC.
+* **Tamanho do Payload:** O JSON de resposta terá estrutura e tamanho idênticos (~2KB) em ambas as soluções.
 
 ## 5. Infraestrutura e Ferramentas
 Para garantir um ambiente controlado e isolado, utilizaremos a infraestrutura de nuvem da AWS. O monitoramento será feito via **Datadog** (para métricas de CPU/RAM) e a geração de carga via **k6**, uma ferramenta robusta para simulação de usuários. A paridade de recursos é garantida pelo uso de containers Docker, assegurando que o Node.js tenha os mesmos limites de vCPU e memória que o ambiente Low-Code.
@@ -50,10 +75,10 @@ A execução seguirá um protocolo rigoroso para assegurar a consistência dos d
 O estudo é do tipo *in silico*, onde a população refere-se às transações de leitura do sistema. Planejamos coletar uma amostra robusta de **1.000 a 10.000 requisições** por cenário de teste. Para evitar vieses de cache simples (onde o banco responde sempre a mesma coisa), utilizaremos dados sintéticos e aleatórios, forçando o sistema a processar requisições variadas durante todo o teste.
 
 ## 8. Estratégia de Análise de Dados
-A análise focará na Inferência Comparativa Quantitativa. Não avaliaremos apenas as médias, que podem esconder problemas, mas sim os **percentis de cauda (p95 e p99)**, que refletem a experiência dos usuários nos piores casos de lentidão. Serão aplicados testes estatísticos (como Mann-Whitney) e análises visuais via *Boxplots* para identificar a estabilidade e o ponto de ruptura de cada tecnologia.
+A análise focará na Inferência Comparativa Quantitativa. Não será avaliado apenas as médias, que podem esconder problemas, mas sim os **percentis de cauda (p95 e p99)**, que refletem a experiência dos usuários nos piores casos de lentidão. Serão aplicados testes estatísticos e análises visuais via *Boxplots* para identificar a estabilidade e o ponto de ruptura de cada tecnologia.
 
 ## 9. Ameaças à Validade e Mitigação
-Identificamos e controlamos riscos que poderiam invalidar os resultados. O problema de "vizinhos barulhentos" na nuvem será mitigado rodando 3 repetições por cenário em horários distintos. A latência de rede externa será eliminada posicionando o gerador de carga na mesma rede interna (VPC) dos servidores. Além disso, o uso de fases de aquecimento (*Warm-up*) neutraliza a desvantagem da "partida a frio" típica de ambientes gerenciados.
+Identificamos e controlamos riscos que poderiam invalidar os resultados. O problema de "vizinhos barulhentos" (Em nuvem pública, outra VM no mesmo hardware físico pode roubar ciclos de CPU) na nuvem será mitigado rodando 3 repetições por cenário em horários distintos. Além disso, o uso de fases de aquecimento (*Warm-up*) neutraliza a desvantagem da "partida a frio" típica de ambientes gerenciados.
 
 ## 10. Critérios de Sucesso
 O experimento será considerado bem-sucedido e válido para tomada de decisão se houver a execução completa das baterias de teste sem falhas críticas nas ferramentas. Os dados devem apresentar consistência estatística (variância entre rodadas inferior a 20%) e deve ser possível distinguir claramente o tempo de processamento da aplicação em relação ao tempo de resposta do banco de dados.
