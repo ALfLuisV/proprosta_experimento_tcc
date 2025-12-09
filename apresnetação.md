@@ -1,10 +1,17 @@
 # Apresentação do Experimento: Low-Code vs. High-Code
 
 ## 1. Contexto e Problema
-Atualmente no contexto da solução de problemas através do desenvolvimento, enfrentamos um dilema estratégico: a necessidade de acelerar o desenvolvimento utilizando plataformas **Low-Code** versus a incerteza técnica sobre a capacidade dessas ferramentas suportarem alta demanda. Embora o Low-Code prometa agilidade, existe o risco do custo de performance ("taxa de abstração") inviabilizar sua aplicação em sistemas críticos de acesso em massa. O experimento surge para substituir suposições por dados técnicos concretos sobre desempenho e escalabilidade.
+A organização enfrenta um dilema estratégico: a necessidade de acelerar o desenvolvimento utilizando plataformas **Low-Code** versus a incerteza técnica sobre a capacidade dessas ferramentas suportarem alta demanda. Embora o Low-Code prometa agilidade, existe o risco do custo de performance ("taxa de abstração") inviabilizar sua aplicação em sistemas críticos de acesso em massa. O experimento surge para substituir suposições por dados técnicos concretos sobre desempenho e escalabilidade.
 
 ## 2. Objetivos e Métricas (GQM)
-O objetivo central é analisar comparativamente a degradação de performance entre uma solução Low-Code e uma solução tradicional em Node.js (High-Code). Utilizando a abordagem GQM (Goal-Question-Metric), mediremos três pilares fundamentais: a **Latência** (tempo de resposta percebido pelo usuário), a **Vazão** (capacidade máxima de requisições por segundo) e a **Eficiência de Hardware** (quanto de CPU e memória é consumido para realizar o mesmo trabalho).
+O objetivo central é analisar comparativamente a degradação de performance entre uma solução Low-Code e uma solução tradicional em Node.js (High-Code). Abaixo, a matriz detalhada de Objetivos, Perguntas e Métricas definida para o estudo:
+
+| Objetivo Específico | Perguntas Chave (Questions) | Métricas (Metrics) |
+| :--- | :--- | :--- |
+| **(O1) Analisar Latência**<br>Determinar o tempo de resposta percebido pelo cliente. | **Q1:** Qual é a latência basal em condições normais?<br>**Q2:** Como a latência se comporta para os 5% piores casos (cauda)? | **M01:** Tempo Médio de Resposta (ART)<br>**M03:** Latência p95 (Percentil 95)<br>**M05:** Fator de Degradação |
+| **(O2) Avaliar Vazão**<br>Identificar o volume máximo de transações suportado. | **Q1:** Qual o máximo de requisições/segundo sustentável?<br>**Q2:** Em que ponto o sistema satura? | **M06:** Max Throughput (RPS)<br>**M08:** Ponto de Saturação (Usuários Simultâneos) |
+| **(O3) Eficiência**<br>Mensurar o custo computacional da solução. | **Q1:** Qual o consumo de CPU para sustentar 500 usuários?<br>**Q2:** Existe vazamento de memória? | **M10:** Utilização Média de vCPU (%)<br>**M11:** Consumo de Memória RAM (MB) |
+| **(O4) Confiabilidade**<br>Verificar estabilidade sob estresse. | **Q1:** Qual a taxa de falhas sob carga máxima?<br>**Q2:** Ocorrem timeouts de conexão? | **M14:** Taxa de Erro (%)<br>**M16:** Contagem de Timeouts |
 
 ## 3. Modelo Conceitual e Hipóteses
 O modelo teórico baseia-se na premissa de que plataformas Low-Code operam sobre camadas adicionais de interpretação e frameworks genéricos, gerando um *overhead* computacional natural. As hipóteses principais testarão se, sob a mesma carga, a solução Low-Code apresenta latência média superior ($H_1$ Latência) e consome significativamente mais recursos de CPU ($H_1$ Eficiência) do que o código otimizado em Node.js.
