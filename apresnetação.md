@@ -1,4 +1,4 @@
-# Apresnetação do Experimento: Low-Code vs. High-Code
+# Apresentação do Experimento: Low-Code vs. High-Code
 
 ## 1. Contexto e Problema
 Atualmente no contexto da solução de problemas através do desenvolvimento, enfrentamos um dilema estratégico: a necessidade de acelerar o desenvolvimento utilizando plataformas **Low-Code** versus a incerteza técnica sobre a capacidade dessas ferramentas suportarem alta demanda. Embora o Low-Code prometa agilidade, existe o risco do custo de performance ("taxa de abstração") inviabilizar sua aplicação em sistemas críticos de acesso em massa. O experimento surge para substituir suposições por dados técnicos concretos sobre desempenho e escalabilidade.
