@@ -10,7 +10,8 @@
    - v1.0.1 (Especificações técnicas do projeto)
    - v1.0.2 (Modelo conceitual e hipóteses; Variáveis, fatores, tratamentos e objetos de estudo; Desenho experimental)
    - v1.0.3 (População, sujeitos e amostragem; Instrumentação e protocolo operacional; Plano de análise de dados (pré-execução))
-   - v1.0.4 (Avaliação de validade (ameaças e mitigação)) - Atual
+   - v1.0.4 (Avaliação de validade (ameaças e mitigação))
+   - v1.0.5 (Verão final) - Atual
 * **1.4 Datas:** 21/11/2025
 * **1.5 Autores:** Alfredo Luis Vieira - Graduando em Engenharia de Software
 * **1.6 Responsável principal:** Alfredo Luis Vieira.
@@ -369,3 +370,134 @@ Refere-se à capacidade de generalizar os resultados para fora deste experimento
 | **Constructo** | Latência de Rede mascarando o processamento | Rodar testes dentro da mesma VPC (Rede Interna); Monitorar métricas de CPU/RAM (Internas) além da latência. |
 | **Conclusão** | Violação de suposição de Normalidade dos dados | Utilizar testes estatísticos não-paramétricos (Mann-Whitney) e focar em percentis (p95/p99) em vez de apenas média. |
 | **Externa** | Generalização indevida para qualquer Low-Code | Delimitar explicitamente no relatório que os dados valem apenas para a ferramenta "X" na versão testada. |
+
+## 14. Ética, privacidade e conformidade
+
+### 14.1 Questões éticas
+Como este é um experimento *in silico* (teste de software) e não com seres humanos, as questões éticas giram em torno da relação comercial e contratual com o fornecedor da plataforma Low-Code.
+* **Benchmarking Reverso:** Existe o risco ético e legal de violar os Termos de Serviço (ToS) do fornecedor, que frequentemente proíbem a publicação externa de benchmarks comparativos sem autorização prévia.
+* **Tratamento:** O relatório resultante será classificado como **"Confidencial - Uso Interno"**, restrito à equipe de engenharia e diretoria, não sendo publicado em blogs ou artigos externos.
+
+### 14.2 Consentimento informado
+* **Não Aplicável a Humanos:** Não há coleta de consentimento de usuários.
+
+
+### 14.3 Privacidade e proteção de dados
+* **Dados Sintéticos:** O experimento utilizará estritamente **Dados Sintéticos (Fictícios)** gerados por scripts (Mocker/Faker).
+* **Proteção:** Nenhum dado real de cliente (PII - Personally Identifiable Information) será carregado no banco de dados de teste. Isso elimina riscos de vazamento e garante conformidade total com a LGPD.
+* **Ciclo de Vida:** O banco de dados de teste será destruído (*dropped*) imediatamente após a conclusão da fase de análise.
+
+### 14.4 Aprovações necessárias
+* **Jurídico:** Consulta rápida para verificar se o contrato da ferramenta Low-Code possui cláusulas de rescisão imediata em caso de *load testing*. (Status: *Pendente*).
+
+---
+
+## 15. Recursos, infraestrutura e orçamento
+
+### 15.1 Recursos humanos e papéis
+* **Alfredo Luis (Engenheiro de Software):** Executor principal. Responsável por codificar os scripts k6, provisionar infraestrutura e executar os testes.
+
+### 15.2 Infraestrutura técnica necessária
+* **Ambiente de Computação:**
+    * 1x EC2 `c5.large` (Gerador de Carga k6).
+    * 1x EC2 `t3.medium` (Servidor Node.js - Container Docker).
+    * 1x Instância/Container da Plataforma Low-Code (com recursos equivalentes a `t3.medium`).
+* **Dados:** 1x AWS RDS PostgreSQL (`db.t3.medium`).
+* **Ferramentas:** Docker, k6 (Load Testing) e Datadog.
+* **Repositório:** GitHub.
+
+### 15.3 Materiais e insumos
+* **Licença Low-Code:** Uso de 1 licença de desenvolvimento, ou Free.
+* **Dataset:** Script SQL (`seed_1m_users.sql`) pronto para execução.
+* **Chaves de API:** Credenciais de acesso programático à AWS.
+
+### 15.4 Orçamento e custos estimados
+* **Infraestrutura Cloud (AWS):** Estimativa de **R$ 500,00** (considerando instâncias sob demanda por ~40 horas de trabalho + tráfego de rede).
+* **Licenças de Software:** Custo zero (uso de licenças já adquiridas ou Open Source).
+* **Horas-Homem:** 60 horas de engenharia (Alocação interna, sem desembolso extra).
+
+---
+
+## 16. Cronograma, marcos e riscos operacionais
+
+### 16.1 Macrocronograma
+* **Semana 1:** Configuração do Ambiente e Desenvolvimento das APIs (Low vs High).
+* **Semana 2 (Dia 1-3):** Criação e validação dos scripts de carga (k6) e massa de dados.
+* **Semana 2 (Dia 4-5):** Execução do **Piloto** e ajustes.
+* **Semana 3:** Execução das Baterias de Teste Oficiais (Coleta de Dados).
+* **Semana 4:** Análise dos dados e Redação do Relatório Final.
+
+### 16.2 Dependências entre atividades
+1.  Provisionamento do RDS $\rightarrow$ Carga da Massa de Dados.
+2.  Validação Funcional (Postman) $\rightarrow$ Início da Execução do k6.
+
+### 16.3 Riscos operacionais e plano de contingência
+* **Risco:** Bloqueio de IP pela plataforma Low-Code (SaaS).
+    * *Contingência:* Solicitar "Allow-listing" do IP do gerador de carga junto ao suporte do fornecedor (pode atrasar o teste em 48h).
+* **Risco:** Estouro do orçamento de nuvem por esquecimento de máquinas ligadas.
+    * *Contingência:* Configuração de "AWS Budget Alarm" para disparar e-mail se passar de R$ 400,00. Script automático para desligar ambientes às 19h.
+
+---
+
+## 17. Governança do experimento
+
+### 17.1 Papéis e responsabilidades formais
+* **Executor (Alfredo):** Responsável pela integridade técnica e execução.
+
+### 17.2 Ritos de acompanhamento
+* **Checkpoint de Preparação:** Revisão única antes do início da Semana 3 para confirmar que o ambiente está pronto (DoR).
+
+### 17.3 Processo de controle de mudanças
+* Qualquer alteração no escopo (ex: mudar o tamanho da instância de teste) deve ser registrada como um **Pull Request** no arquivo `README.md` do repositório do experimento. Isso garante a rastreabilidade de *por que* o teste mudou no meio do caminho.
+
+---
+
+## 18. Plano de documentação e reprodutibilidade
+
+### 18.1 Repositórios e convenções
+* **Local:** GitHub `/eng-architecture/benchmark-lowcode-2025`.
+* **Convenção de Nomes:**
+    * Scripts: `scenario_{users}vu_{platform}.js` (ex: `scenario_500vu_lowcode.js`).
+    * Logs: `raw_data_{timestamp}_{platform}.csv`.
+
+### 18.2 Templates e artefatos padrão
+* **Script k6 Base:** Template parametrizável onde se altera apenas a URL alvo e a quantidade de VUs.
+* **Dockerfile Node.js:** Arquivo padrão da empresa para garantir que o ambiente High-Code seja representativo da produção.
+
+### 18.3 Plano de empacotamento para replicação
+* O repositório conterá um arquivo `Makefile` ou `run.sh` que automatiza todo o processo: sobe a infra $\rightarrow$ popula o banco $\rightarrow$ roda o teste.
+* A solução Low-Code será exportada como um arquivo binário/pacote (ex: `.oml`, `.zip`) e versionada no Git para garantir que o teste possa ser refeito exatamente na mesma versão do código no futuro.
+
+---
+
+## 19. Plano de comunicação
+
+### 19.1 Públicos e mensagens-chave
+* **Equipe Técnica:** Detalhes sobre gargalos encontrados, consumo de memória e *stack traces*.
+* **Gestão:** Resumo executivo ("Low-Code é X% mais lento e custa Y% a mais/menos"), recomendação de uso (Go/No-Go).
+
+### 19.2 Canais e frequência
+* **Slack:** Atualizações em tempo real durante a execução dos testes (para monitorar falhas).
+* **E-mail:** Relatório final em PDF gerado ao fim da Semana 4.
+* **Reunião de Apresentação:** Sessão de 1 hora para apresentar os gráficos e conclusões.
+
+### 19.3 Pontos de comunicação obrigatórios
+1.  **Início da Execução:** Avisar no canal geral de engenharia (para evitar alarme falso de ataque DDoS).
+2.  **Conclusão com Sucesso:** Avisar que os recursos foram desligados.
+3.  **Falha Crítica:** Comunicar imediatamente se a plataforma sair do ar.
+
+---
+
+## 20. Critérios de prontidão para execução (Definition of Ready)
+
+### 20.1 Checklist de prontidão
+* [ ] Plano de Experimento revisado e aprovado pelo executor.
+* [ ] Ambientes (Low-Code e Node.js) implantados e acessíveis via curl.
+* [ ] Banco de dados populado com 10.0000 de registros e índice criado.
+* [ ] Scripts k6 testados no piloto (sem erros de sintaxe).
+* [ ] Dashboards do Datadog recebendo métricas de ambas as instâncias.
+
+### 20.2 Aprovações finais para iniciar a operação
+* **Alfredo Luis (Executor):** "De acordo técnico" (Code Review dos scripts).
+* **Alfredo Luis (Executor):** Confirmação de disponibilidade de tempo para acompanhar os testes.
+* **Registro:** E-mail ou mensagem no Slack confirmando: *"Ambiente validado. Iniciando bateria de testes oficial conforme plano EXP-LC-PERF-001."*
